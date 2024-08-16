@@ -1,0 +1,26 @@
+[package]
+name = "ore_delegation"
+version = "1.0.0"
+description = "Ore Mining Group Delegation Program"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "ore_delegation"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+devnet = [] 
+localnet = []
+
+[dependencies]
+anchor-lang = "0.30.1"
+anchor-spl = "0.30.1"
+bytemuck = "1.14.3"
+ore-utils = "2.1.0"
+ore-api = "2.1.0"
