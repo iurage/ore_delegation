@@ -94,12 +94,14 @@ export const delegateOreIx = async (
       owner: authority,
     });
   }
+  const pendingStakeAccount = pdas.derivePendingStakeAccount(miningGroup);
   return program.methods
     .delegateOre(amount)
     .accountsPartial({
       authority,
       miningGroup,
       sourceTokenAccount,
+      pendingStakeAccount,
       referrer: referrer ?? null,
     })
     .instruction();
@@ -133,6 +135,7 @@ export const processDelegationIx = async (
   return program.methods
     .processDelegation()
     .accountsPartial({
+      miningGroup,
       delegateRecord,
       epochRecord,
     })

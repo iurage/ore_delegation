@@ -15,5 +15,5 @@ export interface MiningGroup {
   deOreSupply: BN;
   pendingUnstakeInDeOre: BN;
   unclaimedStakedDeOre: BN;
-  name: String;
+  name: number[];
 }
