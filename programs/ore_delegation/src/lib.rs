@@ -9,7 +9,7 @@ use instructions::*;
 use state::*;
 use utils::*;
 
-declare_id!("AceRyPKDMjP5MSZXaS4qeZxEa2QbfbhmJBq2t6gCzfVu");
+declare_id!("DeoREdoVi3iqMHQq6sFHD2gBQUYQUMoBEEf3WqpQwLu");
 
 #[program]
 pub mod ore_delegation {

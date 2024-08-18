@@ -13,5 +13,5 @@ export const ORE_PROGRAM = new PublicKey(
   "5TMAA2EqCwbAsM759Lx7bQRV9AfYKE3NwMR7kpSjKGPM"
 );
 export const DE_ORE_PROGRAM = new PublicKey(
-  "AceRyPKDMjP5MSZXaS4qeZxEa2QbfbhmJBq2t6gCzfVu"
+  "DeoREdoVi3iqMHQq6sFHD2gBQUYQUMoBEEf3WqpQwLu"
 );

@@ -6,7 +6,7 @@ skip-lint = false
 seeds = true
 
 [programs.devnet]
-ore_delegation = "AceRyPKDMjP5MSZXaS4qeZxEa2QbfbhmJBq2t6gCzfVu"
+ore_delegation = "DeoREdoVi3iqMHQq6sFHD2gBQUYQUMoBEEf3WqpQwLu"
 
 [registry]
 url = "https://api.apr.dev"

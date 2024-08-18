@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/ore_delegation.json`.
  */
 export type OreDelegation = {
-  address: "AceRyPKDMjP5MSZXaS4qeZxEa2QbfbhmJBq2t6gCzfVu";
+  address: "DeoREdoVi3iqMHQq6sFHD2gBQUYQUMoBEEf3WqpQwLu";
   metadata: {
     name: "oreDelegation";
     version: "1.0.0";
@@ -898,7 +898,7 @@ export type OreDelegation = {
           {
             name: "endingDeOreExchangeRate";
             docs: [
-              "Exchange rate epoch ended at. Defaults to 0 if epooch has not ended."
+              "Exchange rate epoch ended at. Value is set to 0 if epoch has not ended."
             ];
             type: {
               defined: {
@@ -1006,7 +1006,10 @@ export type OreDelegation = {
             docs: [
               "Exchange rate in amount of ore (with precision of 10) per de_ore.",
               "E.g. a rate of 1.05 Ore per DeOre will be stored as:",
-              "10_500_000_000"
+              "10_500_000_000",
+              "Rate starts with 1.0 and is an increasing function except in the case",
+              "where de_ore_supply is reduced to 0 in an epoch, and rate is reset back to 1.0",
+              "in the following epoch."
             ];
             type: "u128";
           }
