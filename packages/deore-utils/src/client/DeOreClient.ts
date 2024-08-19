@@ -97,6 +97,10 @@ export class DeOreClient {
       : ORE_TOKEN_ADDR.devnet;
   }
 
+  isMainnet() {
+    return this._network == Network.mainnet;
+  }
+
   async fetchTokenBalances(commitment: Commitment = "confirmed") {
     const ata = getAssociatedTokenAddressSync(
       this.oreTokenAddress(),
@@ -138,10 +142,17 @@ export class DeOreClient {
         this.program,
         uniqueSeed,
         commissionBps,
-        name
+        name,
+        this.isMainnet()
       )
     );
-    tx.add(await instructions.initGroupAccountsIx(this.program, miningGroup));
+    tx.add(
+      await instructions.initGroupAccountsIx(
+        this.program,
+        miningGroup,
+        this.isMainnet()
+      )
+    );
     // Create Miner's Delegate Record
     tx.add(await instructions.initDelegateRecordIx(this.program, miningGroup));
     // Create ATA for Ore if not present.
@@ -163,12 +174,24 @@ export class DeOreClient {
     // Delegate Ore for miner if non-zero.
     if (!stakeAmount.isZero()) {
       tx.add(
-        await instructions.delegateOreIx(this.program, miningGroup, stakeAmount)
+        await instructions.delegateOreIx(
+          this.program,
+          miningGroup,
+          stakeAmount,
+          this.isMainnet()
+        )
       );
     }
     // Start initial epoch 0 if indicated
     if (startEpoch) {
-      tx.add(await instructions.startEpochIx(this.program, miningGroup, 0));
+      tx.add(
+        await instructions.startEpochIx(
+          this.program,
+          miningGroup,
+          0,
+          this.isMainnet()
+        )
+      );
     }
     // Process Delegation if epoch started with delegation
     if (!stakeAmount.isZero() && startEpoch) {
@@ -206,7 +229,14 @@ export class DeOreClient {
         await instructions.initDelegateRecordIx(this.program, miningGroup)
       );
     }
-    tx.add(await instructions.delegateOreIx(this.program, miningGroup, amount));
+    tx.add(
+      await instructions.delegateOreIx(
+        this.program,
+        miningGroup,
+        amount,
+        this.isMainnet()
+      )
+    );
     tx.feePayer = this.payer();
     await simulateAndAddComputeBudgetUnits(
       this.connection().rpcEndpoint,
@@ -277,6 +307,7 @@ export class DeOreClient {
         this.program,
         miningGroup,
         currentEpoch,
+        this.isMainnet(),
         this.payer(),
         miner
       )

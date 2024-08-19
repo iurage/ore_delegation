@@ -9,9 +9,9 @@ export const initMiningGroupIx = async (
   uniqueSeed: number,
   commissionBps: number,
   name: string,
+  isMainnet = true,
   payer?: PublicKey,
-  authority?: PublicKey,
-  isMainnet = true
+  authority?: PublicKey
 ) => {
   if (!payer) payer = program.provider.publicKey;
   if (!authority) authority = program.provider.publicKey;
@@ -21,7 +21,7 @@ export const initMiningGroupIx = async (
     .accounts({
       payer,
       authority,
-      proof: pdas.deriveProofAddress(miningGroup),
+      proof: pdas.deriveProofAddress(miningGroup, isMainnet),
       slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
       oreProgram: isMainnet ? ORE_PROGRAM.mainnet : ORE_PROGRAM.devnet,
     })
@@ -31,9 +31,9 @@ export const initMiningGroupIx = async (
 export const initTreasuryIx = async (
   program: Program<OreDelegation>,
   feeBps: number,
+  isMainnet = true,
   payer?: PublicKey,
-  authority?: PublicKey,
-  isMainnet = true
+  authority?: PublicKey
 ) => {
   if (!payer) payer = program.provider.publicKey;
   if (!authority) authority = program.provider.publicKey;
@@ -50,8 +50,8 @@ export const initTreasuryIx = async (
 export const initGroupAccountsIx = async (
   program: Program<OreDelegation>,
   miningGroup: PublicKey,
-  payer?: PublicKey,
-  isMainnet = true
+  isMainnet = true,
+  payer?: PublicKey
 ) => {
   if (!payer) payer = program.provider.publicKey;
   return program.methods
@@ -86,10 +86,10 @@ export const delegateOreIx = async (
   program: Program<OreDelegation>,
   miningGroup: PublicKey,
   amount: BN,
+  isMainnet = true,
   authority?: PublicKey,
   sourceTokenAccount?: PublicKey,
-  referrer?: PublicKey,
-  isMainnet = true
+  referrer?: PublicKey
 ) => {
   if (!authority) authority = program.provider.publicKey;
   if (!sourceTokenAccount) {
@@ -164,9 +164,9 @@ export const startEpochIx = async (
   program: Program<OreDelegation>,
   miningGroup: PublicKey,
   currentEpoch: number,
+  isMainnet = true,
   payer?: PublicKey,
-  miner?: PublicKey,
-  isMainnet = true
+  miner?: PublicKey
 ) => {
   if (!payer) payer = program.provider.publicKey;
   if (!miner) miner = program.provider.publicKey;
@@ -174,7 +174,7 @@ export const startEpochIx = async (
   const endEpochRecord =
     currentEpoch > 0 ? pdas.deriveEpochRecord(currentEpoch, miningGroup) : null;
   const minerDelegateRecord = pdas.deriveDelegateRecord(miningGroup, miner);
-  const proof = pdas.deriveProofAddress(miningGroup);
+  const proof = pdas.deriveProofAddress(miningGroup, isMainnet);
 
   return program.methods
     .startEpoch()
@@ -188,8 +188,8 @@ export const startEpochIx = async (
       treasuryTokenAccount: pdas.deriveTreasuryTokenAccount(),
       minerDelegateRecord,
       proof,
-      oreTreasury: pdas.deriveOreTreasury(),
-      oreTreasuryTokens: pdas.deriveOreTreasuryTokens(),
+      oreTreasury: pdas.deriveOreTreasury(isMainnet),
+      oreTreasuryTokens: pdas.deriveOreTreasuryTokens(isMainnet),
       oreProgram: isMainnet ? ORE_PROGRAM.mainnet : ORE_PROGRAM.devnet,
     })
     .instruction();

@@ -78,7 +78,7 @@ export const deriveOreTreasury = (isMainnet = true) => {
 };
 
 export const deriveOreTreasuryTokens = (isMainnet = true) => {
-  const treasury = deriveOreTreasury();
+  const treasury = deriveOreTreasury(isMainnet);
   return getAssociatedTokenAddressSync(
     isMainnet ? ORE_TOKEN_ADDR.mainnet : ORE_TOKEN_ADDR.devnet,
     treasury,
