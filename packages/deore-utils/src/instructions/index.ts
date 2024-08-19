@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program, BN, utils } from "@coral-xyz/anchor";
 import { PublicKey, SYSVAR_SLOT_HASHES_PUBKEY } from "@solana/web3.js";
-import { ORE_PROGRAM, ORE_TOKEN_ADDR, pdas } from "../index";
+import { ORE_TOKEN_ADDR, ORE_PROGRAM, pdas } from "../index";
 import { OreDelegation } from "../types";
 
 export const initMiningGroupIx = async (
@@ -10,7 +10,8 @@ export const initMiningGroupIx = async (
   commissionBps: number,
   name: string,
   payer?: PublicKey,
-  authority?: PublicKey
+  authority?: PublicKey,
+  isMainnet = true
 ) => {
   if (!payer) payer = program.provider.publicKey;
   if (!authority) authority = program.provider.publicKey;
@@ -22,7 +23,7 @@ export const initMiningGroupIx = async (
       authority,
       proof: pdas.deriveProofAddress(miningGroup),
       slotHashes: SYSVAR_SLOT_HASHES_PUBKEY,
-      oreProgram: ORE_PROGRAM,
+      oreProgram: isMainnet ? ORE_PROGRAM.mainnet : ORE_PROGRAM.devnet,
     })
     .instruction();
 };
@@ -31,7 +32,8 @@ export const initTreasuryIx = async (
   program: Program<OreDelegation>,
   feeBps: number,
   payer?: PublicKey,
-  authority?: PublicKey
+  authority?: PublicKey,
+  isMainnet = true
 ) => {
   if (!payer) payer = program.provider.publicKey;
   if (!authority) authority = program.provider.publicKey;
@@ -40,7 +42,7 @@ export const initTreasuryIx = async (
     .accounts({
       payer,
       authority,
-      mint: ORE_TOKEN_ADDR,
+      mint: isMainnet ? ORE_TOKEN_ADDR.mainnet : ORE_TOKEN_ADDR.devnet,
     })
     .instruction();
 };
@@ -48,7 +50,8 @@ export const initTreasuryIx = async (
 export const initGroupAccountsIx = async (
   program: Program<OreDelegation>,
   miningGroup: PublicKey,
-  payer?: PublicKey
+  payer?: PublicKey,
+  isMainnet = true
 ) => {
   if (!payer) payer = program.provider.publicKey;
   return program.methods
@@ -56,7 +59,7 @@ export const initGroupAccountsIx = async (
     .accounts({
       payer,
       miningGroup,
-      mint: ORE_TOKEN_ADDR,
+      mint: isMainnet ? ORE_TOKEN_ADDR.mainnet : ORE_TOKEN_ADDR.devnet,
     })
     .instruction();
 };
@@ -85,12 +88,13 @@ export const delegateOreIx = async (
   amount: BN,
   authority?: PublicKey,
   sourceTokenAccount?: PublicKey,
-  referrer?: PublicKey
+  referrer?: PublicKey,
+  isMainnet = true
 ) => {
   if (!authority) authority = program.provider.publicKey;
   if (!sourceTokenAccount) {
     sourceTokenAccount = anchor.utils.token.associatedAddress({
-      mint: ORE_TOKEN_ADDR,
+      mint: isMainnet ? ORE_TOKEN_ADDR.mainnet : ORE_TOKEN_ADDR.devnet,
       owner: authority,
     });
   }
@@ -161,7 +165,8 @@ export const startEpochIx = async (
   miningGroup: PublicKey,
   currentEpoch: number,
   payer?: PublicKey,
-  miner?: PublicKey
+  miner?: PublicKey,
+  isMainnet = true
 ) => {
   if (!payer) payer = program.provider.publicKey;
   if (!miner) miner = program.provider.publicKey;
@@ -185,7 +190,7 @@ export const startEpochIx = async (
       proof,
       oreTreasury: pdas.deriveOreTreasury(),
       oreTreasuryTokens: pdas.deriveOreTreasuryTokens(),
-      oreProgram: ORE_PROGRAM,
+      oreProgram: isMainnet ? ORE_PROGRAM.mainnet : ORE_PROGRAM.devnet,
     })
     .instruction();
 };

@@ -31,6 +31,11 @@ import {
 } from "@solana/spl-token";
 import { fetchPriorityFee, simulateAndAddComputeBudgetUnits } from "./utils";
 
+export enum Network {
+  mainnet,
+  devnet,
+}
+
 export interface DeOreClientConfig {
   provider: Provider;
   hasActualWallet: boolean;
@@ -40,11 +45,14 @@ export interface DeOreClientConfig {
   computeBudgetMultiplier?: number;
   // Default is 1 lamport.
   maxPriorityFeeMicroLamports?: number;
+  // Network
+  network: Network;
 }
 
 export class DeOreClient {
   program: Program<OreDelegation>;
   hasActualWallet: boolean;
+  private _network: Network;
   private _computeBudgetMultiplier: number;
   private _priorityFeeMultiplier: number;
   private _maxPriorityFeeMicroLamports: number;
@@ -58,6 +66,7 @@ export class DeOreClient {
     this._priorityFeeMultiplier = config.priorityFeeMultiplier || 2;
     this._maxPriorityFeeMicroLamports =
       config.maxPriorityFeeMicroLamports || 10 ** 6;
+    this._network = config.network;
   }
 
   connection() {
@@ -82,8 +91,17 @@ export class DeOreClient {
     return;
   }
 
+  oreTokenAddress() {
+    return this._network == Network.mainnet
+      ? ORE_TOKEN_ADDR.mainnet
+      : ORE_TOKEN_ADDR.devnet;
+  }
+
   async fetchTokenBalances(commitment: Commitment = "confirmed") {
-    const ata = getAssociatedTokenAddressSync(ORE_TOKEN_ADDR, this.payer());
+    const ata = getAssociatedTokenAddressSync(
+      this.oreTokenAddress(),
+      this.payer()
+    );
     const accs = await this.connection().getMultipleAccountsInfo(
       [ata, this.payer()],
       commitment
@@ -127,7 +145,10 @@ export class DeOreClient {
     // Create Miner's Delegate Record
     tx.add(await instructions.initDelegateRecordIx(this.program, miningGroup));
     // Create ATA for Ore if not present.
-    const ata = getAssociatedTokenAddressSync(ORE_TOKEN_ADDR, this.payer());
+    const ata = getAssociatedTokenAddressSync(
+      this.oreTokenAddress(),
+      this.payer()
+    );
     const ataAcc = await this.connection().getAccountInfo(ata);
     if (!ataAcc) {
       tx.add(
@@ -135,7 +156,7 @@ export class DeOreClient {
           this.payer(),
           ata,
           this.payer(),
-          ORE_TOKEN_ADDR
+          this.oreTokenAddress()
         )
       );
     }
@@ -152,7 +173,12 @@ export class DeOreClient {
     // Process Delegation if epoch started with delegation
     if (!stakeAmount.isZero() && startEpoch) {
       tx.add(
-        await instructions.processDelegationIx(this.program, miningGroup, this.payer(), 0)
+        await instructions.processDelegationIx(
+          this.program,
+          miningGroup,
+          this.payer(),
+          0
+        )
       );
     }
     tx.feePayer = this.payer();
@@ -197,7 +223,10 @@ export class DeOreClient {
     miningGroup: PublicKey,
     amount: BN
   ): Promise<TransactionSignature> {
-    const ata = getAssociatedTokenAddressSync(ORE_TOKEN_ADDR, this.payer());
+    const ata = getAssociatedTokenAddressSync(
+      this.oreTokenAddress(),
+      this.payer()
+    );
     const ataAcc = await this.connection().getAccountInfo(ata);
 
     const tx = new Transaction();
@@ -209,7 +238,7 @@ export class DeOreClient {
           this.payer(),
           ata,
           this.payer(),
-          ORE_TOKEN_ADDR
+          this.oreTokenAddress()
         )
       );
     }
@@ -232,17 +261,25 @@ export class DeOreClient {
     miningGroup: PublicKey,
     currentEpoch?: number
   ): Promise<TransactionSignature> {
+    let miner = this.payer();
     if (currentEpoch == null) {
       const miningGroupData = await this.program.account.miningGroup.fetch(
         miningGroup
       );
       currentEpoch = miningGroupData.currentEpoch.toNumber();
+      miner = miningGroupData.authority; // overwrite miner
     }
     const tx = new Transaction();
     const setPriorityFeeIx = await this.getSetPriorityFeeIx();
     if (setPriorityFeeIx) tx.add(setPriorityFeeIx);
     tx.add(
-      await instructions.startEpochIx(this.program, miningGroup, currentEpoch)
+      await instructions.startEpochIx(
+        this.program,
+        miningGroup,
+        currentEpoch,
+        this.payer(),
+        miner
+      )
     );
     tx.feePayer = this.payer();
     await simulateAndAddComputeBudgetUnits(
@@ -285,7 +322,10 @@ export class DeOreClient {
   async processUndelegation(
     miningGroup: PublicKey
   ): Promise<TransactionSignature> {
-    const ata = getAssociatedTokenAddressSync(ORE_TOKEN_ADDR, this.payer());
+    const ata = getAssociatedTokenAddressSync(
+      this.oreTokenAddress(),
+      this.payer()
+    );
     const ataAcc = await this.connection().getAccountInfo(ata);
 
     const tx = new Transaction();
@@ -297,7 +337,7 @@ export class DeOreClient {
           this.payer(),
           ata,
           this.payer(),
-          ORE_TOKEN_ADDR
+          this.oreTokenAddress()
         )
       );
     }

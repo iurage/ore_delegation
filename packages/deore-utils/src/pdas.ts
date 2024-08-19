@@ -63,21 +63,25 @@ export const deriveEpochRecord = (epoch: number, miningGroup: PublicKey) => {
   )[0];
 };
 
-export const deriveProofAddress = (user: PublicKey) => {
+export const deriveProofAddress = (user: PublicKey, isMainnet = true) => {
   return PublicKey.findProgramAddressSync(
     [Buffer.from("proof"), user.toBuffer()],
-    ORE_PROGRAM
+    isMainnet ? ORE_PROGRAM.mainnet : ORE_PROGRAM.devnet
   )[0];
 };
 
-export const deriveOreTreasury = () => {
+export const deriveOreTreasury = (isMainnet = true) => {
   return PublicKey.findProgramAddressSync(
     [Buffer.from("treasury")],
-    ORE_PROGRAM
+    isMainnet ? ORE_PROGRAM.mainnet : ORE_PROGRAM.devnet
   )[0];
 };
 
-export const deriveOreTreasuryTokens = () => {
+export const deriveOreTreasuryTokens = (isMainnet = true) => {
   const treasury = deriveOreTreasury();
-  return getAssociatedTokenAddressSync(ORE_TOKEN_ADDR, treasury, true);
+  return getAssociatedTokenAddressSync(
+    isMainnet ? ORE_TOKEN_ADDR.mainnet : ORE_TOKEN_ADDR.devnet,
+    treasury,
+    true
+  );
 };
