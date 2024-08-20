@@ -3,6 +3,7 @@ import { Program, BN, utils } from "@coral-xyz/anchor";
 import { PublicKey, SYSVAR_SLOT_HASHES_PUBKEY } from "@solana/web3.js";
 import { ORE_TOKEN_ADDR, ORE_PROGRAM, pdas } from "../index";
 import { OreDelegation } from "../types";
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 export const initMiningGroupIx = async (
   program: Program<OreDelegation>,
@@ -149,13 +150,20 @@ export const processDelegationIx = async (
 export const processUndelegationIx = async (
   program: Program<OreDelegation>,
   miningGroup: PublicKey,
-  userWallet: PublicKey
+  userWallet: PublicKey,
+  isMainnet = true
 ) => {
   const delegateRecord = pdas.deriveDelegateRecord(miningGroup, userWallet);
+  const delegateOreAccount = getAssociatedTokenAddressSync(
+    isMainnet ? ORE_TOKEN_ADDR.mainnet : ORE_TOKEN_ADDR.devnet,
+    userWallet,
+    true
+  );
   return program.methods
     .processUndelegation()
-    .accounts({
+    .accountsPartial({
       delegateRecord,
+      delegateOreAccount,
     })
     .instruction();
 };

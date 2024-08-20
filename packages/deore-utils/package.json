@@ -1,6 +1,6 @@
 {
   "name": "deore-utils",
-  "version": "0.0.1-rc16",
+  "version": "0.0.1-rc17",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.es.js",

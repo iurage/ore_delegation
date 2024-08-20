@@ -376,7 +376,8 @@ export class DeOreClient {
       await instructions.processUndelegationIx(
         this.program,
         miningGroup,
-        this.payer()
+        this.payer(),
+        this.isMainnet()
       )
     );
     tx.feePayer = this.payer();
